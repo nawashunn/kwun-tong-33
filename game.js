@@ -2019,8 +2019,36 @@ touchShootBtn?.addEventListener("pointerdown", (e) => {
   ensureAudioRunning();
   triggerShoot();
 });
+touchShootBtn?.addEventListener(
+  "touchstart",
+  (e) => {
+    e.preventDefault();
+    ensureAudioRunning();
+    triggerShoot();
+  },
+  { passive: false },
+);
+touchShootBtn?.addEventListener("click", (e) => {
+  e.preventDefault();
+  ensureAudioRunning();
+  triggerShoot();
+});
 
 touchHolyBtn?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  ensureAudioRunning();
+  triggerHolyWater();
+});
+touchHolyBtn?.addEventListener(
+  "touchstart",
+  (e) => {
+    e.preventDefault();
+    ensureAudioRunning();
+    triggerHolyWater();
+  },
+  { passive: false },
+);
+touchHolyBtn?.addEventListener("click", (e) => {
   e.preventDefault();
   ensureAudioRunning();
   triggerHolyWater();

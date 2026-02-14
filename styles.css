@@ -100,6 +100,7 @@ canvas {
   min-width: 190px;
   font-weight: 600;
   line-height: 1.45;
+  pointer-events: none;
 }
 
 #hud .hint {
@@ -124,13 +125,14 @@ canvas {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 14px;
+  bottom: max(14px, env(safe-area-inset-bottom));
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 0 14px;
-  z-index: 30;
+  z-index: 60;
   pointer-events: none;
 }
 
@@ -151,6 +153,7 @@ canvas {
   min-width: 120px;
   min-height: 52px;
   font-size: 15px;
+  touch-action: manipulation;
 }
 
 #touchHoly:disabled {
