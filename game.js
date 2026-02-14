@@ -1203,6 +1203,10 @@ function checkGameState() {
 }
 
 function drawHungToRoadBackdrop(w, h) {
+  // Clear with an opaque base each frame to prevent alpha color bleed artifacts.
+  ctx.fillStyle = "#0a1019";
+  ctx.fillRect(0, 0, w, h);
+
   const sky = ctx.createLinearGradient(0, 0, 0, h * 0.6);
   sky.addColorStop(0, "#0b1220");
   sky.addColorStop(0.6, "#1a2840");
@@ -1211,8 +1215,8 @@ function drawHungToRoadBackdrop(w, h) {
   ctx.fillRect(0, 0, w, h / 2);
 
   const haze = ctx.createRadialGradient(w * 0.52, h * 0.18, 10, w * 0.52, h * 0.18, w * 0.45);
-  haze.addColorStop(0, "rgba(245, 212, 138, 0.22)");
-  haze.addColorStop(1, "rgba(245, 212, 138, 0)");
+  haze.addColorStop(0, "rgba(168, 194, 228, 0.18)");
+  haze.addColorStop(1, "rgba(168, 194, 228, 0)");
   ctx.fillStyle = haze;
   ctx.fillRect(0, 0, w, h * 0.55);
 
@@ -1233,7 +1237,7 @@ function drawHungToRoadBackdrop(w, h) {
     const by = b[1] * h;
     const bw = b[2] * w;
     const bh = b[3] * h;
-    ctx.fillStyle = "rgba(25, 34, 48, 0.92)";
+    ctx.fillStyle = "rgb(25, 34, 48)";
     ctx.fillRect(bx, by, bw, bh);
 
     ctx.fillStyle = "rgba(170, 198, 235, 0.22)";
@@ -1244,7 +1248,7 @@ function drawHungToRoadBackdrop(w, h) {
     }
   }
 
-  ctx.fillStyle = "rgba(14, 19, 27, 0.95)";
+  ctx.fillStyle = "rgb(14, 19, 27)";
   ctx.fillRect(0, h * 0.52, w, h * 0.48);
 
   const asphalt = ctx.createLinearGradient(0, h * 0.55, 0, h);
@@ -1252,7 +1256,6 @@ function drawHungToRoadBackdrop(w, h) {
   asphalt.addColorStop(1, "#1a2028");
   ctx.fillStyle = asphalt;
   ctx.fillRect(0, h * 0.56, w, h * 0.44);
-
 }
 
 function drawCloudLayer(w, h, amount, windStrength, darkness = 0) {
