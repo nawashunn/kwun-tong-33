@@ -139,23 +139,6 @@ canvas {
   color: var(--accent);
 }
 
-#hud {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  padding: 7px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: var(--panel);
-  border-radius: 8px;
-  z-index: 10;
-  min-width: 154px;
-  font-size: 13px;
-  font-weight: 550;
-  line-height: 1.28;
-  pointer-events: none;
-  backdrop-filter: blur(2px);
-}
-
 #reticle {
   position: fixed;
   top: 50%;

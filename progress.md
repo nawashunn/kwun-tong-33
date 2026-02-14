@@ -236,3 +236,30 @@ Validation:
   - Softer border and lighter backdrop blur.
 - Validation:
   - `node --check /Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` passed.
+
+## 2026-02-14 HUD Removal + Continue Prompt Simplification
+
+- Removed the top HUD completely from `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/index.html`.
+- Removed leftover HUD styling block from `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/styles.css`.
+- Removed HUD element usage from `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js`:
+  - No `hud` show/hide calls.
+  - Removed `health/day/enemies/holy water` HUD DOM updates.
+  - `updateHUD()` now only updates mobile Holy Water button text/state.
+- Day-complete intro text changed to remove the “Press Continue when ready” remark:
+  - Now shows day completion line + next day story.
+  - Continue remains button-driven via `Continue to Day X`.
+- Confirmed continue behavior remains button-only:
+  - No overlay-wide click-to-start listener.
+  - Touching anywhere on overlay does not start the next day.
+- Cache bump:
+  - Updated script URL to `game.js?v=45`.
+
+## Validation
+
+- `node --check /Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` passed.
+- Ran skill Playwright client:
+  - `node /Users/nawashunn/.codex/skills/develop-web-game/scripts/web_game_playwright_client.js --url http://127.0.0.1:8080 --actions-file /Users/nawashunn/.codex/skills/develop-web-game/references/action_payloads.json --click-selector "#startBtn" --iterations 3 --pause-ms 250`
+- Reviewed screenshots:
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-0.png`
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-1.png`
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-2.png`

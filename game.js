@@ -1,7 +1,6 @@
 window.__hoiwaBootReady = true;
 
 const overlay = document.getElementById("overlay");
-const hud = document.getElementById("hud");
 const gameOverPanel = document.getElementById("gameOver");
 const gameOverTitle = document.getElementById("gameOverTitle");
 const gameOverText = document.getElementById("gameOverText");
@@ -18,10 +17,6 @@ const overlayWarn = overlay.querySelector(".warn");
 const bootStatus = document.getElementById("bootStatus");
 const dayStoryEl = document.getElementById("dayStory");
 
-const healthEl = document.getElementById("health");
-const waveEl = document.getElementById("wave");
-const remainingEl = document.getElementById("remaining");
-const holyWaterEl = document.getElementById("holyWater");
 const isMobileTouch = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || navigator.maxTouchPoints > 0;
 
 const canvas = document.createElement("canvas");
@@ -492,7 +487,6 @@ function showDayIntro(day, completedDay = 0) {
   gameActive = false;
   overlay.classList.remove("hidden");
   gameOverPanel.classList.add("hidden");
-  hud.classList.add("hidden");
   if (creditsPanel) creditsPanel.classList.add("hidden");
 
   setOverlayTitle();
@@ -500,11 +494,11 @@ function showDayIntro(day, completedDay = 0) {
   if (dayStoryEl) {
     const introText =
       completedDay > 0
-        ? `第 ${completedDay} 日完成，請按 Continue 再開始。\nDay ${completedDay} complete. Press Continue when ready.\n\n${getDayStory(day)}`
+        ? `第 ${completedDay} 日完成。\nDay ${completedDay} complete.\n\n${getDayStory(day)}`
         : getDayStory(day);
     dayStoryEl.textContent = introText;
   }
-  if (bootStatus) bootStatus.textContent = day === 1 ? "Press Start to begin." : "Press Continue to begin the next day.";
+  if (bootStatus) bootStatus.textContent = day === 1 ? "Press Start to begin." : "Day briefing ready.";
   startBtn.textContent = day === 1 ? "Start Day 1" : `Continue to Day ${day}`;
   introContinueReadyAt = performance.now() + 650;
   startBtn.disabled = true;
@@ -691,18 +685,6 @@ function spawnBoss() {
 }
 
 function updateHUD() {
-  let bossRemaining = 0;
-  for (const g of ghosts) {
-    if (g.alive && g.isBoss) {
-      bossRemaining = 1;
-      break;
-    }
-  }
-  const remaining = Math.max(0, totalGhostsThisWave - deadInWave) + bossRemaining;
-  healthEl.textContent = String(Math.max(0, Math.floor(health)));
-  waveEl.textContent = String(wave);
-  remainingEl.textContent = String(remaining);
-  if (holyWaterEl) holyWaterEl.textContent = String(holyWaterCharges);
   if (touchHolyBtn) {
     touchHolyBtn.textContent = `💧 x${holyWaterCharges}`;
     touchHolyBtn.disabled = holyWaterCharges <= 0;
@@ -776,7 +758,6 @@ function requestStart() {
   overlay.classList.add("hidden");
   gameOverPanel.classList.add("hidden");
   if (creditsPanel) creditsPanel.classList.add("hidden");
-  hud.classList.remove("hidden");
   gameActive = true;
   lookReady = false;
   updateReticle();
