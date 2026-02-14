@@ -556,6 +556,11 @@ function castRay(rayAngle) {
   return Math.min(Math.abs(dist), maxDepth);
 }
 
+function getGhostHpForWave(day) {
+  if (day <= 1) return 5;
+  return 10 + (day - 2) * 2;
+}
+
 function spawnEnemy(isBoss = false) {
   for (let i = 0; i < 120; i += 1) {
     const spawnMin = minAimAngle + ghostArcMargin;
@@ -570,7 +575,7 @@ function spawnEnemy(isBoss = false) {
     ghosts.push({
       x,
       y,
-      hp: isBoss ? 24 + wave * 6 : 5,
+      hp: isBoss ? 24 + wave * 6 : getGhostHpForWave(wave),
       speed: (isBoss ? 0.56 : 0.62) + Math.random() * (isBoss ? 0.18 : 0.28) + wave * 0.055,
       hitCd: 0,
       bob: Math.random() * 10,
@@ -921,10 +926,18 @@ function releaseHolyWater() {
   holyWaterBlastTime = 0.55;
   playHolyWaterSfx();
 
+  const targets = [];
   for (const g of ghosts) {
     if (!g.alive) continue;
     const d = Math.hypot(g.x - player.x, g.y - player.y);
     if (d > 7.2) continue;
+    targets.push({ g, d });
+  }
+
+  targets.sort((a, b) => a.d - b.d);
+  const maxHits = 3;
+  for (let i = 0; i < Math.min(maxHits, targets.length); i += 1) {
+    const g = targets[i].g;
     if (g.isBoss) {
       g.hp -= 16;
       if (g.hp <= 0) defeatGhost(g);
@@ -1330,26 +1343,62 @@ function drawHolyWaterBlast(w, h) {
 function drawSupplyPlaneAndDrops(w, h, depthBuffer) {
   if (planeActive) {
     const px = planeX * w;
-    const py = h * 0.17;
-    const planeScale = Math.max(0.85, Math.min(1.2, 1 + (wave - 1) * 0.04));
+    const py = h * 0.165 + Math.sin(performance.now() * 0.004) * 3;
+    const ufoScale = Math.max(1.35, Math.min(2.05, 1.45 + (wave - 1) * 0.1));
+    const lightPulse = 0.45 + (Math.sin(performance.now() * 0.02) + 1) * 0.25;
 
     ctx.save();
     ctx.translate(px, py);
-    ctx.scale(planeScale, planeScale);
-    ctx.fillStyle = "rgba(58, 68, 80, 0.95)";
+    ctx.scale(ufoScale, ufoScale);
+
+    const glow = ctx.createRadialGradient(0, 2, 8, 0, 2, 78);
+    glow.addColorStop(0, "rgba(124, 201, 255, 0.28)");
+    glow.addColorStop(1, "rgba(124, 201, 255, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(-88, -64, 176, 128);
+
+    ctx.fillStyle = "rgba(22, 28, 38, 0.94)";
     ctx.beginPath();
-    ctx.moveTo(-34, -2);
-    ctx.lineTo(26, -2);
-    ctx.lineTo(34, 0);
-    ctx.lineTo(26, 2);
-    ctx.lineTo(-34, 2);
-    ctx.closePath();
+    ctx.ellipse(0, 2, 58, 16, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillRect(-8, -12, 36, 6);
-    ctx.fillRect(-8, 6, 36, 6);
-    ctx.fillStyle = "rgba(170, 178, 190, 0.9)";
+
+    const hull = ctx.createLinearGradient(0, -18, 0, 18);
+    hull.addColorStop(0, "rgba(125, 145, 165, 0.96)");
+    hull.addColorStop(1, "rgba(58, 72, 88, 0.97)");
+    ctx.fillStyle = hull;
     ctx.beginPath();
-    ctx.arc(34, 0, 5, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 52, 13, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const dome = ctx.createRadialGradient(-8, -13, 3, 0, -10, 22);
+    dome.addColorStop(0, "rgba(220, 242, 255, 0.95)");
+    dome.addColorStop(1, "rgba(102, 142, 170, 0.82)");
+    ctx.fillStyle = dome;
+    ctx.beginPath();
+    ctx.ellipse(0, -10, 20, 11, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(186, 214, 236, 0.82)";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 51, 12.4, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    for (let i = -4; i <= 4; i += 1) {
+      const lx = i * 11;
+      ctx.fillStyle = `rgba(255, 234, 146, ${0.35 + lightPulse * 0.55})`;
+      ctx.beginPath();
+      ctx.arc(lx, 9, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = `rgba(149, 216, 255, ${0.11 + lightPulse * 0.18})`;
+    ctx.beginPath();
+    ctx.moveTo(-10, 12);
+    ctx.lineTo(10, 12);
+    ctx.lineTo(24, 56);
+    ctx.lineTo(-24, 56);
+    ctx.closePath();
     ctx.fill();
     ctx.restore();
   }
