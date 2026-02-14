@@ -153,6 +153,11 @@ canvas {
   font-size: 15px;
 }
 
+#touchHoly:disabled {
+  opacity: 0.58;
+  filter: saturate(0.5);
+}
+
 #reticle::before,
 #reticle::after {
   content: "";

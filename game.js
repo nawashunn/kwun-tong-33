@@ -19,7 +19,6 @@ const dayStoryEl = document.getElementById("dayStory");
 const healthEl = document.getElementById("health");
 const waveEl = document.getElementById("wave");
 const remainingEl = document.getElementById("remaining");
-const holyEl = document.getElementById("holy");
 
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
@@ -638,7 +637,10 @@ function updateHUD() {
   healthEl.textContent = String(Math.max(0, Math.floor(health)));
   waveEl.textContent = String(wave);
   remainingEl.textContent = String(remaining);
-  if (holyEl) holyEl.textContent = String(holyWaterCharges);
+  if (touchHolyBtn) {
+    touchHolyBtn.textContent = `Holy Water (x${holyWaterCharges})`;
+    touchHolyBtn.disabled = holyWaterCharges <= 0;
+  }
 }
 
 function showEnd(title, text) {
