@@ -10,6 +10,9 @@
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 html,
@@ -32,6 +35,13 @@ body {
 canvas {
   display: block;
   cursor: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+*::selection {
+  background: transparent;
 }
 
 #overlay,

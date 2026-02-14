@@ -2026,6 +2026,36 @@ document.addEventListener(
 );
 
 document.addEventListener(
+  "touchstart",
+  (e) => {
+    if (!isMobileTouch || !gameActive) return;
+    if (touchHolyBtn && touchHolyBtn.contains(e.target)) return;
+    e.preventDefault();
+  },
+  { passive: false },
+);
+
+document.addEventListener(
+  "touchmove",
+  (e) => {
+    if (!isMobileTouch || !gameActive) return;
+    if (touchHolyBtn && touchHolyBtn.contains(e.target)) return;
+    e.preventDefault();
+  },
+  { passive: false },
+);
+
+document.addEventListener(
+  "touchend",
+  (e) => {
+    if (!isMobileTouch || !gameActive) return;
+    if (touchHolyBtn && touchHolyBtn.contains(e.target)) return;
+    e.preventDefault();
+  },
+  { passive: false },
+);
+
+document.addEventListener(
   "pointerup",
   (e) => {
     if (e.pointerId === activeTouchLookId) activeTouchLookId = null;
