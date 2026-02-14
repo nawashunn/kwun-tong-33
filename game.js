@@ -75,8 +75,13 @@ const cnyGreetings = [
   "一帆風順",
   "闔家安康",
 ];
+const holyWaterScoreStep = 800;
+const supplyDropUnlockHits = 1;
+const ghostCountByWave = [0, 8, 10, 10, 12, 14];
+const ghostHpByWave = [0, 4, 6, 7, 8, 9];
+const mobileDifficultyScale = isMobileTouch ? 0.88 : 1;
 let holyWaterCharges = 0;
-let nextHolyWaterScore = 1000;
+let nextHolyWaterScore = holyWaterScoreStep;
 let holyWaterBlastTime = 0;
 let jesusProtectionTime = 0;
 const jesusProtectionDuration = 10;
@@ -159,7 +164,7 @@ const dayStoryByWave = {
 
 function setDay(day) {
   wave = day;
-  totalGhostsThisWave = 6 + day * 2;
+  totalGhostsThisWave = ghostCountByWave[day] ?? 6 + day * 2;
   spawnedInWave = 0;
   deadInWave = 0;
   spawnAcc = 0;
@@ -608,8 +613,7 @@ function castRay(rayAngle) {
 }
 
 function getGhostHpForWave(day) {
-  if (day <= 1) return 5;
-  return 10 + (day - 2) * 2;
+  return ghostHpByWave[day] ?? 9 + day;
 }
 
 function spawnEnemy(isBoss = false) {
@@ -626,8 +630,10 @@ function spawnEnemy(isBoss = false) {
     ghosts.push({
       x,
       y,
-      hp: isBoss ? 24 + wave * 6 : getGhostHpForWave(wave),
-      speed: (isBoss ? 0.56 : 0.62) + Math.random() * (isBoss ? 0.18 : 0.28) + wave * 0.055,
+      hp: isBoss ? Math.floor((22 + wave * 4) * mobileDifficultyScale) : getGhostHpForWave(wave),
+      speed:
+        ((isBoss ? 0.5 : 0.53) + Math.random() * (isBoss ? 0.13 : 0.2) + Math.max(0, wave - 1) * (isBoss ? 0.03 : 0.028)) *
+        mobileDifficultyScale,
       hitCd: 0,
       bob: Math.random() * 10,
       alive: true,
@@ -684,7 +690,7 @@ function resetGame() {
   health = 100;
   score = 0;
   holyWaterCharges = 0;
-  nextHolyWaterScore = 1000;
+  nextHolyWaterScore = holyWaterScoreStep;
   holyWaterBlastTime = 0;
   jesusProtectionTime = 0;
   supplyFlashTime = 0;
@@ -882,8 +888,8 @@ function startPlaneFlyby() {
 
 function randomSupplyType() {
   const r = Math.random();
-  if (r < 0.45) return "hp";
-  if (r < 0.8) return "holy";
+  if (r < 0.4) return "hp";
+  if (r < 0.88) return "holy";
   return "jesus";
 }
 
@@ -912,7 +918,7 @@ function spawnSupplyDrop() {
     state: "falling",
     fall: 0,
     vy: 0,
-    hp: 5,
+    hp: supplyDropUnlockHits,
     groundLife: 18,
     flash: 0,
     sway: Math.random() * Math.PI * 2,
@@ -974,7 +980,7 @@ function updateSupplyDrops(dt) {
 function maybeGrantHolyWater() {
   while (score >= nextHolyWaterScore) {
     holyWaterCharges += 1;
-    nextHolyWaterScore += 1000;
+    nextHolyWaterScore += holyWaterScoreStep;
     playPickupSfx();
   }
 }
@@ -994,11 +1000,11 @@ function releaseHolyWater() {
   }
 
   targets.sort((a, b) => a.d - b.d);
-  const maxHits = 3;
+  const maxHits = 4;
   for (let i = 0; i < Math.min(maxHits, targets.length); i += 1) {
     const g = targets[i].g;
     if (g.isBoss) {
-      g.hp -= 16;
+      g.hp -= 20;
       if (g.hp <= 0) defeatGhost(g);
     } else {
       defeatGhost(g);
@@ -1010,7 +1016,7 @@ function updateGhosts(dt) {
   for (const g of ghosts) {
     if (!g.alive) continue;
     g.dodgeCd = Math.max(0, (g.dodgeCd || 0) - dt);
-    if (wave >= 3 && maybeDodgeGhost(g)) {
+    if (wave >= 4 && maybeDodgeGhost(g)) {
       g.lastX = g.x;
       g.lastY = g.y;
     }
@@ -1072,7 +1078,7 @@ function updateGhosts(dt) {
         g.hitCd = 0.75;
         supplyFlashTime = Math.max(supplyFlashTime, 0.1);
       } else {
-        health -= 6 + wave * 0.4;
+        health -= (4.2 + wave * 0.26) * (isMobileTouch ? 0.92 : 1);
         g.hitCd = 0.7;
         damageFlashTime = 0.24;
         screenShakeTime = 0.22;
@@ -1101,9 +1107,9 @@ function maybeDodgeGhost(g) {
   }
   if (!threat) return false;
 
-  const chance = Math.min(0.62, 0.34 + (wave - 3) * 0.08);
+  const chance = wave <= 3 ? 0 : Math.min(0.42, 0.18 + (wave - 4) * 0.11);
   if (Math.random() > chance) {
-    g.dodgeCd = 0.22;
+    g.dodgeCd = 0.26;
     return false;
   }
 
@@ -1123,12 +1129,12 @@ function maybeDodgeGhost(g) {
     if (!hasClearPath(player.x, player.y, ax, ay)) continue;
     g.x = ax;
     g.y = ay;
-    g.dodgeCd = 0.72;
+    g.dodgeCd = 0.86;
     playDodgeSfx();
     return true;
   }
 
-  g.dodgeCd = 0.35;
+  g.dodgeCd = 0.42;
   return false;
 }
 
@@ -1178,7 +1184,8 @@ function updateDeathGreetings(dt) {
 
 function spawnWaveGhosts(dt) {
   if (spawnedInWave < totalGhostsThisWave) {
-    const spawnRate = Math.min(1.35 + wave * 0.2, 2.6);
+    const baseSpawnRate = [0, 1.18, 1.34, 1.36, 1.52, 1.66][wave] ?? Math.min(1.18 + wave * 0.14, 1.95);
+    const spawnRate = isMobileTouch ? baseSpawnRate * 0.9 : baseSpawnRate;
     spawnAcc += dt * spawnRate;
     while (spawnAcc >= 1 && spawnedInWave < totalGhostsThisWave) {
       spawnAcc -= 1;
