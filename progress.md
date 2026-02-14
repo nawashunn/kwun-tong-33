@@ -192,3 +192,36 @@ Validation:
 Validation:
 - `node --check game.js` passed.
 - Skill Playwright client run completed after the update.
+
+## 2026-02-14 Day Continue Gate + Drop Unlock + HUD Polish
+
+- Implemented explicit day-to-day continue gating in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js`:
+  - Removed overlay-wide click-to-start to avoid accidental instant resume on touch.
+  - Day intro now requires pressing `Start/Continue` button.
+  - Added a short button lock (`~650ms`) when day intro opens to prevent accidental fast skip.
+  - After each day clear, intro shows completion message and requires `Continue to Day X` click.
+- Updated PC control instruction text:
+  - Overlay warning now says: `PC: Press S to shoot, F for Holy Water...`
+  - HUD now includes hint line: `PC: Press S to shoot, F for Holy Water.`
+- Updated supply drop unlock hits:
+  - `supplyDropUnlockHits` changed from `1` to `3` (requires 3 shots to open drop item).
+- Made top HUD more transparent:
+  - `--panel` alpha lowered from `0.9` to `0.48`.
+  - Added subtle `backdrop-filter: blur(3px)` on HUD.
+- Cache bump:
+  - `index.html` script query updated to `game.js?v=44`.
+
+## Validation
+
+- `node --check /Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` passed.
+- Ran skill Playwright client:
+  - `node /Users/nawashunn/.codex/skills/develop-web-game/scripts/web_game_playwright_client.js --url http://127.0.0.1:8080 --actions-file /Users/nawashunn/.codex/skills/develop-web-game/references/action_payloads.json --click-selector "#startBtn" --iterations 3 --pause-ms 250`
+- Reviewed generated screenshots:
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-0.png`
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-1.png`
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-2.png`
+
+## TODO (next agent)
+
+- Optional UX polish: replace `Start Day 1` / `Continue to Day X` labels with bilingual text if needed.
+- Optional QA: run a mobile manual pass to tune intro button lock duration (650ms) for best feel.

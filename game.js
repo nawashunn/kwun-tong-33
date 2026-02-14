@@ -76,7 +76,7 @@ const cnyGreetings = [
   "闔家安康",
 ];
 const holyWaterScoreStep = 800;
-const supplyDropUnlockHits = 1;
+const supplyDropUnlockHits = 3;
 const ghostCountByWave = [0, 8, 10, 10, 12, 14];
 const ghostHpByWave = [0, 4, 6, 7, 8, 9];
 const mobileDifficultyScale = isMobileTouch ? 0.88 : 1;
@@ -98,6 +98,8 @@ const supplyDrops = [];
 let lightningFlashTime = 0;
 let lightningCooldown = 0.8;
 let pendingDayIntro = 1;
+let introContinueReadyAt = 0;
+let introContinueTimer = 0;
 
 let audioCtx = null;
 let masterGain = null;
@@ -484,7 +486,7 @@ function setOverlayTitle() {
     '<span class="titleZh">觀搪 33 : 大展鴻圖</span><span class="titleEn">Kwun Tong 33 - Hung To Exorcism</span>';
 }
 
-function showDayIntro(day) {
+function showDayIntro(day, completedDay = 0) {
   pendingDayIntro = day;
   gameActive = false;
   overlay.classList.remove("hidden");
@@ -493,10 +495,22 @@ function showDayIntro(day) {
   if (creditsPanel) creditsPanel.classList.add("hidden");
 
   setOverlayTitle();
-  overlayWarn.textContent = "電腦：S/F｜手機：全螢幕點擊射擊 + 左下角聖水";
-  if (dayStoryEl) dayStoryEl.textContent = getDayStory(day);
-  if (bootStatus) bootStatus.textContent = "按 Start 開始。";
-  startBtn.textContent = day === 1 ? "開始第 1 日" : `開始第 ${day} 日`;
+  overlayWarn.textContent = "PC: Press S to shoot, F for Holy Water. Mobile: tap screen to shoot + Holy Water button.";
+  if (dayStoryEl) {
+    const introText =
+      completedDay > 0
+        ? `第 ${completedDay} 日完成，請按 Continue 再開始。\nDay ${completedDay} complete. Press Continue when ready.\n\n${getDayStory(day)}`
+        : getDayStory(day);
+    dayStoryEl.textContent = introText;
+  }
+  if (bootStatus) bootStatus.textContent = day === 1 ? "Press Start to begin." : "Press Continue to begin the next day.";
+  startBtn.textContent = day === 1 ? "Start Day 1" : `Continue to Day ${day}`;
+  introContinueReadyAt = performance.now() + 650;
+  startBtn.disabled = true;
+  if (introContinueTimer) window.clearTimeout(introContinueTimer);
+  introContinueTimer = window.setTimeout(() => {
+    startBtn.disabled = false;
+  }, 660);
 }
 
 function clampToGhostArc(a) {
@@ -743,6 +757,7 @@ function resetGame() {
 
 function requestStart() {
   if (gameActive || gameEnded) return;
+  if (performance.now() < introContinueReadyAt) return;
   requestGameFullscreen();
   if (isMobileTouch) {
     window.setTimeout(() => window.scrollTo(0, 1), 40);
@@ -1233,9 +1248,10 @@ function checkGameState() {
     if (wave >= maxDays) {
       showEnd("地區已淨化", `你成功生還，完成全部 ${maxDays} 日。`);
     } else {
+      const completedDay = wave;
       const nextDay = wave + 1;
       setDay(nextDay);
-      showDayIntro(nextDay);
+      showDayIntro(nextDay, completedDay);
     }
     return;
   }
@@ -2170,7 +2186,6 @@ document.addEventListener("selectstart", (e) => {
   if (isMobileTouch) e.preventDefault();
 });
 
-overlay.addEventListener("click", requestStart);
 startBtn.addEventListener("click", (e) => {
   e.stopPropagation();
   requestStart();

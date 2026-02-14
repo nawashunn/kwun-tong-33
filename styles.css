@@ -1,6 +1,6 @@
 :root {
   --bg: #090c11;
-  --panel: rgba(8, 10, 14, 0.9);
+  --panel: rgba(8, 10, 14, 0.48);
   --accent: #f3d37e;
   --danger: #ef5350;
   --text: #e9eef6;
@@ -152,6 +152,7 @@ canvas {
   font-weight: 600;
   line-height: 1.45;
   pointer-events: none;
+  backdrop-filter: blur(3px);
 }
 
 #hud .hint {
