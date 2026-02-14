@@ -169,11 +169,16 @@ canvas {
   position: fixed;
   top: 50%;
   left: 50%;
-  width: 20px;
-  height: 20px;
+  width: 12px;
+  height: 12px;
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 12;
+  border-radius: 50%;
+  background: #d3121f;
+  box-shadow:
+    0 0 0 2px rgba(255, 218, 218, 0.35),
+    0 0 14px rgba(230, 35, 45, 0.55);
 }
 
 #mobileControls {
@@ -210,23 +215,7 @@ canvas {
 
 #reticle::before,
 #reticle::after {
-  content: "";
-  position: absolute;
-  background: rgba(243, 211, 126, 0.9);
-}
-
-#reticle::before {
-  width: 2px;
-  height: 20px;
-  left: 9px;
-  top: 0;
-}
-
-#reticle::after {
-  width: 20px;
-  height: 2px;
-  left: 0;
-  top: 9px;
+  display: none;
 }
 
 button {

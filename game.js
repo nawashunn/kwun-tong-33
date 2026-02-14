@@ -1633,6 +1633,49 @@ function drawDamageFlash(w, h) {
   ctx.fillRect(0, 0, w, h);
 }
 
+function drawProjectileCrucifixSprite(x, y, size, angle) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  const shaftW = Math.max(2, size * 0.26);
+  const shaftH = size * 1.35;
+  const armW = size * 1.1;
+  const armH = Math.max(2, size * 0.24);
+
+  ctx.fillStyle = "rgba(138, 96, 61, 0.97)";
+  ctx.fillRect(-shaftW / 2, -shaftH * 0.62, shaftW, shaftH);
+  ctx.fillRect(-armW / 2, -armH * 0.45, armW, armH);
+
+  ctx.strokeStyle = "rgba(252, 230, 182, 0.52)";
+  ctx.lineWidth = Math.max(1, size * 0.06);
+  ctx.strokeRect(-shaftW / 2, -shaftH * 0.62, shaftW, shaftH);
+  ctx.strokeRect(-armW / 2, -armH * 0.45, armW, armH);
+
+  ctx.fillStyle = "rgba(232, 216, 194, 0.95)";
+  ctx.beginPath();
+  ctx.arc(0, -size * 0.34, size * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(232, 216, 194, 0.92)";
+  ctx.lineWidth = Math.max(1, size * 0.065);
+  ctx.beginPath();
+  ctx.moveTo(0, -size * 0.24);
+  ctx.lineTo(0, size * 0.25);
+  ctx.moveTo(-size * 0.25, -size * 0.03);
+  ctx.lineTo(size * 0.25, -size * 0.03);
+  ctx.moveTo(-size * 0.03, size * 0.24);
+  ctx.lineTo(-size * 0.1, size * 0.42);
+  ctx.moveTo(size * 0.03, size * 0.24);
+  ctx.lineTo(size * 0.1, size * 0.42);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(172, 40, 48, 0.9)";
+  ctx.fillRect(-shaftW * 0.52, size * 0.08, shaftW * 1.04, Math.max(2, size * 0.08));
+
+  ctx.restore();
+}
+
 function drawProjectileSprites(w, h, depthBuffer) {
   const ammo = [];
   for (const p of projectiles) {
@@ -1665,17 +1708,10 @@ function drawProjectileSprites(w, h, depthBuffer) {
     ctx.lineTo(sx, sy);
     ctx.stroke();
 
-    ctx.save();
-    ctx.translate(sx, sy);
-    ctx.strokeStyle = "rgba(247, 223, 148, 0.95)";
-    ctx.lineWidth = 2.6;
-    ctx.beginPath();
-    ctx.moveTo(0, -size * 0.45);
-    ctx.lineTo(0, size * 0.45);
-    ctx.moveTo(-size * 0.35, 0);
-    ctx.lineTo(size * 0.35, 0);
-    ctx.stroke();
-    ctx.restore();
+    const dirX = sx - tx;
+    const dirY = sy - ty;
+    const rot = Math.atan2(dirY, dirX) + Math.PI / 2;
+    drawProjectileCrucifixSprite(sx, sy, size * 0.68, rot);
   }
 }
 
@@ -1934,11 +1970,6 @@ function render() {
   drawHolyWaterBlast(w, h);
   drawDeathGreetings(w, h, depthBuffer);
   drawProjectileSprites(w, h, depthBuffer);
-
-  const retY = h * (0.5 + lookPitch * 0.35);
-  ctx.fillStyle = "rgba(243, 211, 126, 0.95)";
-  ctx.fillRect(w / 2 - 1, retY - 12, 2, 24);
-  ctx.fillRect(w / 2 - 12, retY - 1, 24, 2);
 
   drawHandAndCrucifix(w, h);
   drawJesusProtectionLayer(w, h);
