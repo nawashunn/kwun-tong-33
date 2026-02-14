@@ -11,9 +11,9 @@ const reticle = document.getElementById("reticle");
 const overlayTitle = overlay.querySelector("h1");
 const overlayWarn = overlay.querySelector(".warn");
 const bootStatus = document.getElementById("bootStatus");
+const dayStoryEl = document.getElementById("dayStory");
 
 const healthEl = document.getElementById("health");
-const scoreEl = document.getElementById("score");
 const waveEl = document.getElementById("wave");
 const remainingEl = document.getElementById("remaining");
 const holyEl = document.getElementById("holy");
@@ -47,11 +47,33 @@ let fireCooldown = 0;
 let handKick = 0;
 const projectileSpeed = 14;
 const deathGreetings = [];
-const cnyGreetings = ["新年快樂", "恭喜發財", "萬事如意", "財源廣進", "吉星高照"];
+const cnyGreetings = [
+  "新年快樂",
+  "恭喜發財",
+  "萬事如意",
+  "財源廣進",
+  "吉星高照",
+  "龍馬精神",
+  "步步高升",
+  "心想事成",
+  "花開富貴",
+  "歲歲平安",
+  "大吉大利",
+  "金玉滿堂",
+  "事事順利",
+  "福星高照",
+  "身體健康",
+  "出入平安",
+  "年年有餘",
+  "鴻運當頭",
+  "一帆風順",
+  "闔家安康",
+];
 let holyWaterCharges = 0;
 let nextHolyWaterScore = 1000;
 let holyWaterBlastTime = 0;
 let jesusProtectionTime = 0;
+const jesusProtectionDuration = 10;
 let supplyFlashTime = 0;
 let damageFlashTime = 0;
 let screenShakeTime = 0;
@@ -64,12 +86,14 @@ let planeCooldown = 8 + Math.random() * 8;
 const supplyDrops = [];
 let lightningFlashTime = 0;
 let lightningCooldown = 0.8;
+let pendingDayIntro = 1;
 
 let audioCtx = null;
 let masterGain = null;
 let musicNodes = null;
 let musicStepTimer = 0;
 let musicStep = 0;
+let musicMode = "normal";
 
 const worldMap = [
   "11111111111111111111",
@@ -103,6 +127,29 @@ const fov = Math.PI / 3;
 const maxDepth = 20;
 const ghosts = [];
 const ghostArcMargin = 0.16;
+const ghostHittableScreenLimit = 0.78;
+const dayStoryByWave = {
+  1: {
+    zh: "Hoiwa Hub 事件後第一夜，你追到觀塘鴻圖道。這晚只是試探，遊魂正觀察你的信念。",
+    en: "First night after the Hoiwa Hub incident, you trace the curse to Hung To Road. This wave is only a test of your faith.",
+  },
+  2: {
+    zh: "走廊誦經聲變得更近，來自 Hub 的破碎銅鈴在街道回響，怨靈開始主動圍攻。",
+    en: "The chanting grows louder, and a broken shrine bell from the Hub echoes through Kwun Tong. The spirits now attack with intent.",
+  },
+  3: {
+    zh: "雨水夾著灰燼落下，詛咒已學會反應你的攻擊，幽靈開始閃避十字架彈。",
+    en: "Rain carries ash across the road. The curse adapts to your pattern, and ghosts start dodging your crucifix shots.",
+  },
+  4: {
+    zh: "牆上浮現 Hoiwa Hub 的故障升降機密碼，精英怨靈借風雨守住最終召喚路線。",
+    en: "A broken elevator code from Hoiwa Hub appears on the walls. Elite spirits use storm winds to guard the final summoning path.",
+  },
+  5: {
+    zh: "最後一夜，Hub 封印帳簿被打開。雷暴撕裂夜空，首領降臨鴻圖道，現在必須終止儀式。",
+    en: "Final night: the sealed Hub ledger is open. Lightning tears the sky as the boss descends on Hung To Road. End the ritual now.",
+  },
+};
 
 function setDay(day) {
   wave = day;
@@ -117,6 +164,7 @@ function setDay(day) {
   } else {
     lightningCooldown = 0.8 + Math.random() * 1.8;
   }
+  musicMode = "normal";
 }
 
 function initAudio() {
@@ -160,52 +208,63 @@ function startMusic() {
   if (!audioCtx || !masterGain || musicNodes) return;
   const now = audioCtx.currentTime;
   const filter = audioCtx.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.setValueAtTime(900, now);
-  filter.Q.value = 0.7;
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(720, now);
+  filter.Q.value = 0.65;
 
   const musicGain = audioCtx.createGain();
   musicGain.gain.setValueAtTime(0.0001, now);
-  musicGain.gain.exponentialRampToValueAtTime(0.13, now + 1.2);
+  musicGain.gain.exponentialRampToValueAtTime(0.085, now + 1.2);
 
-  const drone = audioCtx.createOscillator();
-  drone.type = "triangle";
-  drone.frequency.setValueAtTime(73.4, now);
+  const padA = audioCtx.createOscillator();
+  padA.type = "sine";
+  padA.frequency.setValueAtTime(220, now);
 
-  const pulse = audioCtx.createOscillator();
-  pulse.type = "sine";
-  pulse.frequency.setValueAtTime(147, now);
+  const padB = audioCtx.createOscillator();
+  padB.type = "triangle";
+  padB.frequency.setValueAtTime(277.18, now);
 
-  const pulseGain = audioCtx.createGain();
-  pulseGain.gain.value = 0.03;
+  const padBGain = audioCtx.createGain();
+  padBGain.gain.value = 0.022;
 
-  const lfo = audioCtx.createOscillator();
-  lfo.type = "sine";
-  lfo.frequency.setValueAtTime(0.12, now);
-  const lfoGain = audioCtx.createGain();
-  lfoGain.gain.value = 0.015;
+  const wobble = audioCtx.createOscillator();
+  wobble.type = "sine";
+  wobble.frequency.setValueAtTime(0.09, now);
+  const wobbleGain = audioCtx.createGain();
+  wobbleGain.gain.value = 180;
 
-  lfo.connect(lfoGain);
-  lfoGain.connect(pulseGain.gain);
+  const trem = audioCtx.createOscillator();
+  trem.type = "triangle";
+  trem.frequency.setValueAtTime(0.27, now);
+  const tremGain = audioCtx.createGain();
+  tremGain.gain.value = 0.022;
 
-  drone.connect(filter);
-  pulse.connect(pulseGain);
-  pulseGain.connect(filter);
+  wobble.connect(wobbleGain);
+  wobbleGain.connect(filter.frequency);
+  trem.connect(tremGain);
+  tremGain.connect(musicGain.gain);
+
+  padA.connect(filter);
+  padB.connect(padBGain);
+  padBGain.connect(filter);
   filter.connect(musicGain);
   musicGain.connect(masterGain);
 
-  drone.start(now);
-  pulse.start(now);
-  lfo.start(now);
+  padA.start(now);
+  padB.start(now);
+  wobble.start(now);
+  trem.start(now);
 
   musicNodes = {
     filter,
     musicGain,
-    drone,
-    pulse,
-    pulseGain,
-    lfo,
-    lfoGain,
+    padA,
+    padB,
+    padBGain,
+    wobble,
+    wobbleGain,
+    trem,
+    tremGain,
   };
 }
 
@@ -215,9 +274,10 @@ function stopMusic() {
   musicNodes.musicGain.gain.cancelScheduledValues(now);
   musicNodes.musicGain.gain.setValueAtTime(Math.max(0.0001, musicNodes.musicGain.gain.value), now);
   musicNodes.musicGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
-  musicNodes.drone.stop(now + 0.5);
-  musicNodes.pulse.stop(now + 0.5);
-  musicNodes.lfo.stop(now + 0.5);
+  musicNodes.padA.stop(now + 0.5);
+  musicNodes.padB.stop(now + 0.5);
+  musicNodes.wobble.stop(now + 0.5);
+  musicNodes.trem.stop(now + 0.5);
   musicNodes = null;
 }
 
@@ -247,24 +307,112 @@ function playGhostDownSfx(isBoss) {
   } else {
     playTone(230, 0.09, "square", 0.045);
   }
+  playBambooFirecrackerSfx(isBoss);
 }
 
 function playDodgeSfx() {
   playTone(260, 0.06, "triangle", 0.035);
 }
 
+function noteFreq(base, semitone) {
+  return base * Math.pow(2, semitone / 12);
+}
+
+function playBambooFirecrackerSfx(isBoss) {
+  const burstCount = isBoss ? 14 : 8;
+  const baseVol = isBoss ? 0.055 : 0.038;
+  for (let i = 0; i < burstCount; i += 1) {
+    const jitter = Math.random() * 0.007;
+    const delay = i * 0.028 + jitter;
+    const freq = Math.max(320, 1700 + Math.random() * 950 - i * 75);
+    playTone(freq, 0.032 + Math.random() * 0.018, "square", baseVol, delay);
+    playTone(freq * 0.55, 0.05, "triangle", baseVol * 0.45, delay + 0.006);
+  }
+
+  if (isBoss) {
+    playTone(92, 0.24, "sawtooth", 0.09, burstCount * 0.028 + 0.03);
+  }
+}
+
+function hasAliveBoss() {
+  for (const g of ghosts) {
+    if (g.alive && g.isBoss) return true;
+  }
+  return false;
+}
+
 function updateBackgroundMusic(dt) {
   if (!gameActive || !audioCtx || !masterGain) return;
+  const bossActive = hasAliveBoss();
+  const targetMode = bossActive ? "boss" : "normal";
+  if (targetMode !== musicMode) {
+    musicMode = targetMode;
+    musicStepTimer = 0;
+    musicStep = 0;
+    if (bossActive) {
+      playTone(196, 0.2, "sawtooth", 0.03);
+      playTone(147, 0.24, "triangle", 0.028, 0.03);
+      playTone(110, 0.28, "square", 0.022, 0.06);
+    }
+  }
+
   musicStepTimer -= dt;
   if (musicStepTimer > 0) return;
 
-  musicStepTimer = 0.42;
-  const seq = [220, 247, 262, 294, 330, 294, 262, 247];
-  const root = seq[musicStep % seq.length];
-  const layer = wave >= 4 ? root * 0.5 : root;
+  if (musicMode === "boss") {
+    const pattern = [
+      { semi: 0, dur: 0.28, vol: 0.05, hit: true },
+      { semi: 2, dur: 0.24, vol: 0.044, hit: false },
+      { semi: 5, dur: 0.26, vol: 0.05, hit: true },
+      { semi: 7, dur: 0.22, vol: 0.04, hit: false },
+      { semi: 10, dur: 0.3, vol: 0.052, hit: true },
+      { semi: 7, dur: 0.24, vol: 0.04, hit: false },
+      { semi: 3, dur: 0.28, vol: 0.048, hit: true },
+      { semi: null, dur: 0.18, vol: 0, hit: false },
+    ];
+    const step = pattern[musicStep % pattern.length];
+    musicStepTimer = step.dur;
+    const base = wave >= 5 ? 174.61 : 196;
 
-  playTone(layer, 0.2, "triangle", 0.045);
-  playTone(layer * 2, 0.1, "sine", 0.022, 0.03);
+    if (step.semi !== null) {
+      const melody = noteFreq(base, step.semi - 1);
+      playTone(melody, step.dur * 0.85, "sawtooth", step.vol);
+      playTone(melody * 1.5, step.dur * 0.5, "square", step.vol * 0.46, 0.02);
+      playTone(melody * 0.5, 0.11, "triangle", 0.028, 0.01);
+    }
+    if (step.hit) {
+      playTone(88, 0.09, "square", 0.026);
+      playTone(58, 0.12, "sawtooth", 0.018, 0.02);
+    }
+  } else {
+    const pattern = [
+      { semi: 0, dur: 0.5, vol: 0.05, sting: false },
+      { semi: 3, dur: 0.46, vol: 0.044, sting: false },
+      { semi: 7, dur: 0.56, vol: 0.05, sting: true },
+      { semi: 10, dur: 0.5, vol: 0.045, sting: false },
+      { semi: 6, dur: 0.62, vol: 0.042, sting: true },
+      { semi: 3, dur: 0.54, vol: 0.046, sting: false },
+      { semi: 1, dur: 0.66, vol: 0.052, sting: false },
+      { semi: null, dur: 0.42, vol: 0, sting: false },
+    ];
+
+    const step = pattern[musicStep % pattern.length];
+    musicStepTimer = step.dur;
+    const base = wave >= 4 ? 207.65 : 246.94;
+    const drift = wave >= 4 ? -2 : 0;
+
+    if (step.semi !== null) {
+      const melody = noteFreq(base, step.semi + drift);
+      playTone(melody, step.dur * 0.9, "sine", step.vol);
+      playTone(melody * 1.5, step.dur * 0.64, "triangle", step.vol * 0.45, 0.03);
+      if (step.sting) {
+        playTone(noteFreq(melody, 1), 0.1, "square", 0.016, 0.04);
+      }
+    }
+    if (wave >= 3 && musicStep % 6 === 4) {
+      playTone(noteFreq(base, 13 + drift), 0.22, "sawtooth", 0.016, 0.05);
+    }
+  }
   musicStep += 1;
 }
 
@@ -275,12 +423,50 @@ function updateReticle() {
   reticle.style.left = "50%";
 }
 
+function getDayStory(day) {
+  const story = dayStoryByWave[day];
+  if (!story) return "詛咒正在加深，堅守位置並活下去。\n\nThe curse deepens. Hold your ground and survive.";
+  return `${story.zh}\n\n${story.en}`;
+}
+
+function showDayIntro(day) {
+  pendingDayIntro = day;
+  gameActive = false;
+  overlay.classList.remove("hidden");
+  gameOverPanel.classList.add("hidden");
+  hud.classList.add("hidden");
+
+  overlayTitle.textContent = `Kwun Tong 33 - 第 ${day} 日`;
+  overlayWarn.textContent = "按 S 發射十字架，按 F 使用聖水";
+  if (dayStoryEl) dayStoryEl.textContent = getDayStory(day);
+  if (bootStatus) bootStatus.textContent = "按 Start 開始。";
+  startBtn.textContent = day === 1 ? "開始第 1 日" : `開始第 ${day} 日`;
+}
+
 function clampToGhostArc(a) {
   const minA = minAimAngle + ghostArcMargin;
   const maxA = maxAimAngle - ghostArcMargin;
   if (a < minA) return minA;
   if (a > maxA) return maxA;
   return a;
+}
+
+function keepGhostInHittableView(g) {
+  const relA = normAngle(Math.atan2(g.y - player.y, g.x - player.x) - player.a);
+  const limit = (fov / 2) * ghostHittableScreenLimit;
+  if (Math.abs(relA) <= limit) return;
+
+  const dist = Math.max(1.05, Math.hypot(g.x - player.x, g.y - player.y));
+  const targetRel = relA > 0 ? limit : -limit;
+  const targetA = clampToGhostArc(player.a + targetRel);
+  const tx = player.x + Math.cos(targetA) * dist;
+  const ty = player.y + Math.sin(targetA) * dist;
+  if (canMove(tx, ty) && hasClearPath(player.x, player.y, tx, ty)) {
+    g.x = tx;
+    g.y = ty;
+  } else {
+    relocateGhost(g);
+  }
 }
 
 function resize() {
@@ -418,10 +604,9 @@ function updateHUD() {
   }
   const remaining = Math.max(0, totalGhostsThisWave - deadInWave) + bossRemaining;
   healthEl.textContent = String(Math.max(0, Math.floor(health)));
-  if (scoreEl) scoreEl.textContent = String(score);
   waveEl.textContent = String(wave);
   remainingEl.textContent = String(remaining);
-  if (holyEl) holyEl.textContent = holyWaterCharges > 0 ? `READY ${holyWaterCharges}` : "-";
+  if (holyEl) holyEl.textContent = String(holyWaterCharges);
 }
 
 function showEnd(title, text) {
@@ -461,14 +646,14 @@ function resetGame() {
   stopMusic();
   musicStepTimer = 0;
   musicStep = 0;
+  musicMode = "normal";
 
   player.x = fixedPosition.x;
   player.y = fixedPosition.y;
   player.a = -Math.PI / 2;
   lookPitch = 0;
   updateReticle();
-
-  if (bootStatus) bootStatus.textContent = "Engine ready.";
+  showDayIntro(1);
   updateHUD();
 }
 
@@ -481,6 +666,8 @@ function requestStart() {
   });
   musicStepTimer = 0;
   if (bootStatus) bootStatus.textContent = "Game started.";
+  if (dayStoryEl) dayStoryEl.textContent = "";
+  pendingDayIntro = 0;
   overlay.classList.add("hidden");
   gameOverPanel.classList.add("hidden");
   hud.classList.remove("hidden");
@@ -674,7 +861,7 @@ function applySupplyDrop(type) {
   } else if (type === "holy") {
     holyWaterCharges += 1;
   } else {
-    jesusProtectionTime = Math.max(jesusProtectionTime, 5);
+    jesusProtectionTime = Math.max(jesusProtectionTime, jesusProtectionDuration);
   }
   supplyFlashTime = 0.35;
   playPickupSfx();
@@ -782,6 +969,8 @@ function updateGhosts(dt) {
         relocateGhost(g);
       }
     }
+
+    keepGhostInHittableView(g);
 
     const moved = Math.hypot(g.x - g.lastX, g.y - g.lastY);
     if (moved < 0.01) {
@@ -936,15 +1125,17 @@ function spawnWaveGhosts(dt) {
 function checkGameState() {
   if (health <= 0) {
     health = 0;
-    showEnd("You Were Overtaken", `Final score: ${score}. Day reached: ${wave}.`);
+    showEnd("你被怨靈吞沒", `到達天數：第 ${wave} 日。`);
     return;
   }
 
   if (bossDefeated) {
     if (wave >= maxDays) {
-      showEnd("District Cleansed", `You survived all ${maxDays} Days. Final score: ${score}.`);
+      showEnd("地區已淨化", `你成功生還，完成全部 ${maxDays} 日。`);
     } else {
-      setDay(wave + 1);
+      const nextDay = wave + 1;
+      setDay(nextDay);
+      showDayIntro(nextDay);
     }
     return;
   }
@@ -1237,43 +1428,62 @@ function drawSupplyPlaneAndDrops(w, h, depthBuffer) {
 
 function drawJesusProtectionLayer(w, h) {
   if (jesusProtectionTime <= 0) return;
-  const t = jesusProtectionTime / 5;
-  const pulse = 0.22 + Math.sin(performance.now() * 0.01) * 0.05;
+  const t = Math.min(1, jesusProtectionTime / jesusProtectionDuration);
+  const pulse = 0.16 + Math.sin(performance.now() * 0.008) * 0.05;
+  const cx = w * 0.5;
+  const cy = h * 0.53;
+  const faceRx = Math.min(w * 0.34, h * 0.38);
+  const faceRy = faceRx * 1.22;
+  const eyeY = cy - faceRy * 0.2;
+  const eyeR = faceRx * 0.075;
+  const mouthY = cy + faceRy * 0.25;
 
   ctx.save();
-  ctx.fillStyle = `rgba(248, 218, 144, ${0.09 + pulse * 0.25})`;
+  ctx.fillStyle = `rgba(247, 219, 156, ${0.08 + pulse * 0.22})`;
+  ctx.fillRect(0, 0, w, h);
+
+  const halo = ctx.createRadialGradient(cx, cy - faceRy * 0.34, faceRx * 0.25, cx, cy - faceRy * 0.2, faceRx * 2.25);
+  halo.addColorStop(0, `rgba(255, 244, 214, ${0.28 + t * 0.2})`);
+  halo.addColorStop(1, "rgba(255, 244, 214, 0)");
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = `rgba(245, 224, 192, ${0.18 + t * 0.2})`;
   ctx.beginPath();
-  ctx.arc(w / 2, h / 2, Math.min(w, h) * 0.43, 0, Math.PI * 2);
+  ctx.ellipse(cx, cy, faceRx, faceRy, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.lineWidth = 6;
-  ctx.strokeStyle = `rgba(255, 232, 168, ${0.28 + t * 0.2})`;
+  ctx.strokeStyle = `rgba(255, 240, 210, ${0.28 + pulse * 0.4})`;
+  ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.arc(w / 2, h / 2, Math.min(w, h) * 0.45, 0, Math.PI * 2);
+  ctx.ellipse(cx, cy, faceRx * 1.08, faceRy * 1.08, 0, 0, Math.PI * 2);
   ctx.stroke();
 
-  const fx = w * 0.5;
-  const fy = h * 0.14;
-  const faceR = 24;
-  ctx.fillStyle = "rgba(246, 224, 182, 0.92)";
+  ctx.strokeStyle = "rgba(118, 82, 60, 0.75)";
+  ctx.lineWidth = faceRx * 0.08;
   ctx.beginPath();
-  ctx.arc(fx, fy, faceR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(112, 70, 42, 0.88)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.arc(fx, fy - 6, faceR * 0.9, Math.PI, Math.PI * 2);
+  ctx.moveTo(cx - faceRx * 0.66, cy - faceRy * 0.95);
+  ctx.quadraticCurveTo(cx, cy - faceRy * 1.3, cx + faceRx * 0.66, cy - faceRy * 0.95);
   ctx.stroke();
-  ctx.fillStyle = "rgba(85, 46, 35, 0.9)";
+
+  ctx.fillStyle = "rgba(70, 43, 34, 0.72)";
   ctx.beginPath();
-  ctx.arc(fx - 7, fy - 2, 2, 0, Math.PI * 2);
-  ctx.arc(fx + 7, fy - 2, 2, 0, Math.PI * 2);
+  ctx.ellipse(cx - faceRx * 0.28, eyeY, eyeR, eyeR * 0.82, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx + faceRx * 0.28, eyeY, eyeR, eyeR * 0.82, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "rgba(105, 58, 39, 0.9)";
-  ctx.lineWidth = 2;
+
+  ctx.strokeStyle = "rgba(102, 58, 41, 0.7)";
+  ctx.lineWidth = Math.max(3, faceRx * 0.03);
   ctx.beginPath();
-  ctx.arc(fx, fy + 5, 8, Math.PI * 0.1, Math.PI * 0.9);
+  ctx.arc(cx, mouthY, faceRx * 0.2, Math.PI * 0.08, Math.PI * 0.92);
   ctx.stroke();
+
+  const border = ctx.createLinearGradient(0, 0, 0, h);
+  border.addColorStop(0, `rgba(240, 210, 150, ${0.24 + pulse * 0.35})`);
+  border.addColorStop(1, `rgba(240, 210, 150, ${0.08 + pulse * 0.2})`);
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 8;
+  ctx.strokeRect(4, 4, w - 8, h - 8);
   ctx.restore();
 }
 
@@ -1702,10 +1912,6 @@ startBtn.addEventListener("click", (e) => {
 
 restartBtn.addEventListener("click", () => {
   resetGame();
-  gameOverPanel.classList.add("hidden");
-  overlay.classList.remove("hidden");
-  overlayTitle.textContent = "Hoiwa Hub 33: Hung To Road Exorcism";
-  overlayWarn.textContent = "Press Enter/Space or tap Start to begin.";
 });
 
 resize();

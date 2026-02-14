@@ -1,4 +1,4 @@
-# Hoiwa Hub 33 (Mac)
+# Kwun Tong 33 - Hung To Exorcism (Mac)
 
 A lightweight 3D browser mini-game inspired by your Hoiwa Hub horror prompt:
 - Setting: Hung To Road, Kwun Tong, Hong Kong
@@ -52,7 +52,8 @@ If you already had the page open, refresh with `Cmd+Shift+R` to load the latest 
 - Shooting now uses true 3D projectile arc (horizontal + vertical influence).
 - Added built-in game audio:
   - Ambient background music
-  - Rhythmic background melody loop
+  - Melodic moving bassline loop
+  - Chinese New Year bamboo-firecracker burst when ghosts are killed
   - Shoot, hit, pickup, dodge, ghost defeat, and holy-water SFX
 - Each Day now has weather progression:
   - Day 1: little cloudy
