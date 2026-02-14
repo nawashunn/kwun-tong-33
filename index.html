@@ -19,7 +19,7 @@
       <p id="dayStory"></p>
       <p id="bootStatus" class="warn">Engine loading...</p>
       <button id="startBtn" type="button">Start</button>
-      <button id="openCreditsBtn" class="secondaryBtn" type="button">Credits (EN)</button>
+      <button id="openCreditsBtn" class="secondaryBtn" type="button">Credit</button>
     </div>
 
     <div id="hud" class="hidden">
@@ -37,27 +37,28 @@
     <div id="gameOver" class="hidden">
       <h2 id="gameOverTitle">你成功生還</h2>
       <p id="gameOverText"></p>
-      <p id="gameOverCredits">
-        作者：nawashunn Production<br />
-        技術支援：OpenAI Codex<br />
-        特別鳴謝：BeanKing Computer Entertainment<br />
+      <h3 class="creditHeading">Credit</h3>
+      <p id="gameOverCredits" class="creditBody">
+        遊戲製作｜Game Production: nawashunn Production<br />
+        技術支援｜Technical Support: OpenAI Codex<br />
+        特別鳴謝｜Special Thanks: BeanKing Computer Entertainment<br />
+        靈感連結｜Inspiration Link:
         <a href="https://store.steampowered.com/curator/45637977" target="_blank" rel="noopener noreferrer"
           >https://store.steampowered.com/curator/45637977</a
         >
       </p>
-      <button id="openCreditsFromGameOverBtn" class="secondaryBtn" type="button">English Credits</button>
       <button id="restartBtn">重新開始</button>
     </div>
 
     <div id="creditsPanel" class="hidden">
-      <h2>Credits</h2>
+      <h2>Credit</h2>
       <p class="creditsTitleZh">觀搪 33 : 大展鴻圖</p>
       <p class="creditsTitleEn">Kwun Tong 33 - Hung To Exorcism</p>
-      <p id="creditsEnglish">
-        Game Production: nawashunn Production<br />
-        Technical Support: OpenAI Codex<br />
-        Special Thanks: BeanKing Computer Entertainment<br />
-        Inspiration Link:
+      <p id="creditsEnglish" class="creditBody">
+        遊戲製作｜Game Production: nawashunn Production<br />
+        技術支援｜Technical Support: OpenAI Codex<br />
+        特別鳴謝｜Special Thanks: BeanKing Computer Entertainment<br />
+        靈感連結｜Inspiration Link:
         <a href="https://store.steampowered.com/curator/45637977" target="_blank" rel="noopener noreferrer"
           >https://store.steampowered.com/curator/45637977</a
         >
@@ -76,6 +77,6 @@
         }
       }, 2500);
     </script>
-    <script type="module" src="game.js?v=40"></script>
+    <script type="module" src="game.js?v=41"></script>
   </body>
 </html>

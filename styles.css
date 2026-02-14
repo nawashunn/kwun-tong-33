@@ -99,25 +99,21 @@ canvas {
   text-shadow: 0 2px 12px rgba(130, 0, 0, 0.35);
 }
 
-#gameOverCredits {
-  margin-top: 12px;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--muted);
+.creditHeading {
+  margin: 8px 0 0;
+  color: #e8edf6;
+  font-size: 20px;
+  letter-spacing: 0.03em;
 }
 
-#gameOverCredits a {
-  color: #a8d4ff;
-}
-
-#creditsEnglish {
-  margin-top: 6px;
+.creditBody {
+  margin-top: 10px;
   font-size: 15px;
   line-height: 1.55;
   color: #d4deea;
 }
 
-#creditsEnglish a {
+.creditBody a {
   color: #a8d4ff;
 }
 

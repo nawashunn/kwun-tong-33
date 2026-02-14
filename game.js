@@ -8,7 +8,6 @@ const gameOverText = document.getElementById("gameOverText");
 const restartBtn = document.getElementById("restartBtn");
 const startBtn = document.getElementById("startBtn");
 const openCreditsBtn = document.getElementById("openCreditsBtn");
-const openCreditsFromGameOverBtn = document.getElementById("openCreditsFromGameOverBtn");
 const closeCreditsBtn = document.getElementById("closeCreditsBtn");
 const creditsPanel = document.getElementById("creditsPanel");
 const mobileControls = document.getElementById("mobileControls");
@@ -2150,11 +2149,6 @@ startBtn.addEventListener("click", (e) => {
 });
 
 openCreditsBtn?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  creditsPanel?.classList.remove("hidden");
-});
-
-openCreditsFromGameOverBtn?.addEventListener("click", (e) => {
   e.stopPropagation();
   creditsPanel?.classList.remove("hidden");
 });
