@@ -2,14 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
     <title>Kwun Tong 33 - Hung To Exorcism</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div id="overlay">
       <h1>Kwun Tong 33 - Hung To Exorcism</h1>
-      <p class="warn">五日關卡・每日首領・按 S 發射十字架・按 F 使用聖水</p>
+      <p class="warn">五日關卡・每日首領・手機全螢幕點擊射擊・左下角聖水</p>
       <p id="dayStory"></p>
       <p id="bootStatus" class="warn">Engine loading...</p>
       <button id="startBtn" type="button">Start</button>
@@ -24,9 +27,7 @@
     <div id="reticle"></div>
 
     <div id="mobileControls" class="hidden" aria-hidden="true">
-      <div id="touchLookHint">Drag screen to aim</div>
-      <button id="touchShoot" type="button">Shoot (S)</button>
-      <button id="touchHoly" type="button">Holy Water (F)</button>
+      <button id="touchHoly" type="button" aria-label="Use Holy Water">💧 x0</button>
     </div>
 
     <div id="gameOver" class="hidden">
@@ -54,6 +55,6 @@
         }
       }, 2500);
     </script>
-    <script type="module" src="game.js?v=35"></script>
+    <script type="module" src="game.js?v=36"></script>
   </body>
 </html>

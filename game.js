@@ -8,7 +8,6 @@ const gameOverText = document.getElementById("gameOverText");
 const restartBtn = document.getElementById("restartBtn");
 const startBtn = document.getElementById("startBtn");
 const mobileControls = document.getElementById("mobileControls");
-const touchShootBtn = document.getElementById("touchShoot");
 const touchHolyBtn = document.getElementById("touchHoly");
 const reticle = document.getElementById("reticle");
 const overlayTitle = overlay.querySelector("h1");
@@ -19,6 +18,7 @@ const dayStoryEl = document.getElementById("dayStory");
 const healthEl = document.getElementById("health");
 const waveEl = document.getElementById("wave");
 const remainingEl = document.getElementById("remaining");
+const isMobileTouch = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || navigator.maxTouchPoints > 0;
 
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
@@ -187,6 +187,21 @@ function ensureAudioRunning() {
     return audioCtx.resume().then(() => true).catch(() => false);
   }
   return Promise.resolve(true);
+}
+
+function requestGameFullscreen() {
+  if (!isMobileTouch || document.fullscreenElement) return;
+  const root = document.documentElement;
+  const req = root.requestFullscreen || root.webkitRequestFullscreen;
+  if (!req) return;
+  try {
+    const res = req.call(root);
+    if (res && typeof res.catch === "function") {
+      res.catch(() => {});
+    }
+  } catch (_err) {
+    // Some mobile browsers block fullscreen API; ignore and continue gameplay.
+  }
 }
 
 function playTone(freq, duration, type = "sine", volume = 0.08, delay = 0) {
@@ -463,7 +478,7 @@ function showDayIntro(day) {
   hud.classList.add("hidden");
 
   overlayTitle.textContent = `Kwun Tong 33 - 第 ${day} 日`;
-  overlayWarn.textContent = "電腦：S/F｜手機：拖曳瞄準 + 點擊按鈕";
+  overlayWarn.textContent = "電腦：S/F｜手機：全螢幕點擊射擊 + 左下角聖水";
   if (dayStoryEl) dayStoryEl.textContent = getDayStory(day);
   if (bootStatus) bootStatus.textContent = "按 Start 開始。";
   startBtn.textContent = day === 1 ? "開始第 1 日" : `開始第 ${day} 日`;
@@ -638,7 +653,7 @@ function updateHUD() {
   waveEl.textContent = String(wave);
   remainingEl.textContent = String(remaining);
   if (touchHolyBtn) {
-    touchHolyBtn.textContent = `Holy Water (x${holyWaterCharges})`;
+    touchHolyBtn.textContent = `💧 x${holyWaterCharges}`;
     touchHolyBtn.disabled = holyWaterCharges <= 0;
   }
 }
@@ -693,6 +708,10 @@ function resetGame() {
 
 function requestStart() {
   if (gameActive || gameEnded) return;
+  requestGameFullscreen();
+  if (isMobileTouch) {
+    window.setTimeout(() => window.scrollTo(0, 1), 40);
+  }
   ensureAudioRunning().then((ok) => {
     if (!ok) return;
     startMusic();
@@ -1920,6 +1939,7 @@ window.addEventListener("resize", resize);
 document.addEventListener(
   "pointerdown",
   () => {
+    requestGameFullscreen();
     ensureAudioRunning().then((ok) => {
       if (!ok) return;
       if (gameActive && !musicNodes) startMusic();
@@ -1976,26 +1996,30 @@ document.addEventListener("mousemove", (e) => {
 document.addEventListener(
   "pointerdown",
   (e) => {
-    if (e.pointerType !== "touch" || !gameActive || activeTouchLookId !== null) return;
+    if (e.pointerType !== "touch" || !gameActive) return;
     if (mobileControls && mobileControls.contains(e.target)) return;
+    e.preventDefault();
+    triggerShoot();
+    if (activeTouchLookId !== null) return;
     activeTouchLookId = e.pointerId;
     lastLookX = e.clientX;
     lastLookY = e.clientY;
   },
-  { passive: true },
+  { passive: false },
 );
 
 document.addEventListener(
   "pointermove",
   (e) => {
     if (e.pointerId !== activeTouchLookId || !gameActive) return;
+    e.preventDefault();
     const dx = e.clientX - lastLookX;
     const dy = e.clientY - lastLookY;
     lastLookX = e.clientX;
     lastLookY = e.clientY;
     applyLookDelta(dx, dy);
   },
-  { passive: true },
+  { passive: false },
 );
 
 document.addEventListener(
@@ -2014,44 +2038,33 @@ document.addEventListener(
   { passive: true },
 );
 
-touchShootBtn?.addEventListener("pointerdown", (e) => {
-  e.preventDefault();
-  ensureAudioRunning();
-  triggerShoot();
-});
-touchShootBtn?.addEventListener(
-  "touchstart",
-  (e) => {
-    e.preventDefault();
-    ensureAudioRunning();
-    triggerShoot();
-  },
-  { passive: false },
-);
-touchShootBtn?.addEventListener("click", (e) => {
-  e.preventDefault();
-  ensureAudioRunning();
-  triggerShoot();
-});
+if (touchHolyBtn) {
+  if ("PointerEvent" in window) {
+    touchHolyBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      ensureAudioRunning();
+      triggerHolyWater();
+    });
+  } else {
+    touchHolyBtn.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault();
+        ensureAudioRunning();
+        triggerHolyWater();
+      },
+      { passive: false },
+    );
+    touchHolyBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      ensureAudioRunning();
+      triggerHolyWater();
+    });
+  }
+}
 
-touchHolyBtn?.addEventListener("pointerdown", (e) => {
-  e.preventDefault();
-  ensureAudioRunning();
-  triggerHolyWater();
-});
-touchHolyBtn?.addEventListener(
-  "touchstart",
-  (e) => {
-    e.preventDefault();
-    ensureAudioRunning();
-    triggerHolyWater();
-  },
-  { passive: false },
-);
-touchHolyBtn?.addEventListener("click", (e) => {
-  e.preventDefault();
-  ensureAudioRunning();
-  triggerHolyWater();
+document.addEventListener("selectstart", (e) => {
+  if (isMobileTouch) e.preventDefault();
 });
 
 overlay.addEventListener("click", requestStart);
@@ -2065,7 +2078,7 @@ restartBtn.addEventListener("click", () => {
 });
 
 resize();
-if ((window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || navigator.maxTouchPoints > 0) {
+if (isMobileTouch) {
   mobileControls?.classList.remove("hidden");
   mobileControls?.setAttribute("aria-hidden", "false");
 }
