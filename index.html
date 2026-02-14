@@ -24,6 +24,12 @@
 
     <div id="reticle"></div>
 
+    <div id="mobileControls" class="hidden" aria-hidden="true">
+      <div id="touchLookHint">Drag screen to aim</div>
+      <button id="touchShoot" type="button">Shoot (S)</button>
+      <button id="touchHoly" type="button">Holy Water (F)</button>
+    </div>
+
     <div id="gameOver" class="hidden">
       <h2 id="gameOverTitle">你成功生還</h2>
       <p id="gameOverText"></p>
@@ -49,6 +55,6 @@
         }
       }, 2500);
     </script>
-    <script type="module" src="game.js?v=32"></script>
+    <script type="module" src="game.js?v=33"></script>
   </body>
 </html>

@@ -76,3 +76,37 @@ Original prompt: i added develop web game skill ,can you use skill to check the 
   - Special thanks to BeanKing Computer Entertainment
   - https://store.steampowered.com/curator/45637977
 - Bumped cache version to `game.js?v=21`.
+
+## 2026-02-14 Mobile Touch Controls Update
+
+- Added mobile touch UI in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/index.html`:
+  - `#mobileControls`
+  - `#touchShoot`
+  - `#touchHoly`
+  - Touch hint label
+- Styled touch controls in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/styles.css`:
+  - Large bottom action buttons for coarse pointers
+  - `touch-action: none` to prevent page scroll during gameplay
+  - Auto-hide mobile controls on desktop pointer devices
+- Implemented touch input in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js`:
+  - Drag-to-aim via touch pointer tracking
+  - Reusable action helpers for shoot/holy water
+  - Touch button handlers mapped to same gameplay actions as keyboard
+  - Mobile controls auto-show on touch-capable devices
+  - Overlay instruction text updated to include mobile usage
+
+## 2026-02-14 Mobile Validation Run
+
+- Syntax check:
+  - `node --check /Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` (pass)
+- Ran skill Playwright client after change:
+  - `node /Users/nawashunn/.codex/skills/develop-web-game/scripts/web_game_playwright_client.js --url http://127.0.0.1:8080 --actions-file /Users/nawashunn/.codex/skills/develop-web-game/references/action_payloads.json --click-selector "#startBtn" --iterations 3 --pause-ms 250`
+- Latest screenshots refreshed:
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-0.png`
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-1.png`
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-2.png`
+
+## TODO (next agent)
+
+- Optional polish: add left/right screen zones with separate sensitivity tuning for easier one-hand mobile aiming.
+- Optional QA: run a real-device browser test (iOS Safari + Android Chrome) to tune touch sensitivity and button placement.

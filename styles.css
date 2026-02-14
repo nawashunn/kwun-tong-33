@@ -21,6 +21,7 @@ body {
   font-family: "Avenir Next", "Helvetica Neue", sans-serif;
   background: radial-gradient(circle at 30% 20%, #101522, var(--bg));
   color: var(--text);
+  touch-action: none;
 }
 
 canvas {
@@ -119,6 +120,39 @@ canvas {
   z-index: 12;
 }
 
+#mobileControls {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  z-index: 30;
+  pointer-events: none;
+}
+
+#touchLookHint {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d8e3f2;
+  background: rgba(8, 12, 20, 0.72);
+  border: 1px solid rgba(220, 235, 255, 0.2);
+}
+
+#touchShoot,
+#touchHoly {
+  pointer-events: auto;
+  margin-top: 0;
+  min-width: 120px;
+  min-height: 52px;
+  font-size: 15px;
+}
+
 #reticle::before,
 #reticle::after {
   content: "";
@@ -154,4 +188,10 @@ button {
 
 .hidden {
   display: none !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #mobileControls {
+    display: none !important;
+  }
 }

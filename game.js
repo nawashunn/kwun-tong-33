@@ -7,6 +7,9 @@ const gameOverTitle = document.getElementById("gameOverTitle");
 const gameOverText = document.getElementById("gameOverText");
 const restartBtn = document.getElementById("restartBtn");
 const startBtn = document.getElementById("startBtn");
+const mobileControls = document.getElementById("mobileControls");
+const touchShootBtn = document.getElementById("touchShoot");
+const touchHolyBtn = document.getElementById("touchHoly");
 const reticle = document.getElementById("reticle");
 const overlayTitle = overlay.querySelector("h1");
 const overlayWarn = overlay.querySelector(".warn");
@@ -40,6 +43,7 @@ let bossDefeated = false;
 let lookReady = false;
 let lastLookX = 0;
 let lastLookY = 0;
+let activeTouchLookId = null;
 let lookPitch = 0;
 
 const projectiles = [];
@@ -423,6 +427,29 @@ function updateReticle() {
   reticle.style.left = "50%";
 }
 
+function applyLookDelta(dx, dy) {
+  player.a += dx * 0.0042;
+  lookPitch += dy * 0.0032;
+  if (lookPitch < -0.42) lookPitch = -0.42;
+  if (lookPitch > 0.42) lookPitch = 0.42;
+  if (player.a < minAimAngle) player.a = minAimAngle;
+  if (player.a > maxAimAngle) player.a = maxAimAngle;
+  updateReticle();
+}
+
+function triggerShoot() {
+  if (!gameActive || fireCooldown > 0) return;
+  spawnCrossProjectile(0);
+  playShootSfx();
+  fireCooldown = 0.11;
+  handKick = 1;
+}
+
+function triggerHolyWater() {
+  if (!gameActive || holyWaterCharges <= 0) return;
+  releaseHolyWater();
+}
+
 function getDayStory(day) {
   const story = dayStoryByWave[day];
   if (!story) return "詛咒正在加深，堅守位置並活下去。\n\nThe curse deepens. Hold your ground and survive.";
@@ -437,7 +464,7 @@ function showDayIntro(day) {
   hud.classList.add("hidden");
 
   overlayTitle.textContent = `Kwun Tong 33 - 第 ${day} 日`;
-  overlayWarn.textContent = "按 S 發射十字架，按 F 使用聖水";
+  overlayWarn.textContent = "電腦：S/F｜手機：拖曳瞄準 + 點擊按鈕";
   if (dayStoryEl) dayStoryEl.textContent = getDayStory(day);
   if (bootStatus) bootStatus.textContent = "按 Start 開始。";
   startBtn.textContent = day === 1 ? "開始第 1 日" : `開始第 ${day} 日`;
@@ -1905,13 +1932,10 @@ document.addEventListener("keydown", (e) => {
   keys[e.code] = true;
 
   if (e.code === "KeyS" && !wasDown && gameActive && fireCooldown <= 0) {
-    spawnCrossProjectile(0);
-    playShootSfx();
-    fireCooldown = 0.11;
-    handKick = 1;
+    triggerShoot();
   }
   if (e.code === "KeyF" && !wasDown && gameActive && holyWaterCharges > 0) {
-    releaseHolyWater();
+    triggerHolyWater();
   }
 
   if ((e.code === "Enter" || e.code === "Space") && !gameEnded) {
@@ -1944,13 +1968,60 @@ document.addEventListener("mousemove", (e) => {
 
   lastLookX = e.clientX;
   lastLookY = e.clientY;
-  player.a += dx * 0.0042;
-  lookPitch += dy * 0.0032;
-  if (lookPitch < -0.42) lookPitch = -0.42;
-  if (lookPitch > 0.42) lookPitch = 0.42;
-  if (player.a < minAimAngle) player.a = minAimAngle;
-  if (player.a > maxAimAngle) player.a = maxAimAngle;
-  updateReticle();
+  applyLookDelta(dx, dy);
+});
+
+document.addEventListener(
+  "pointerdown",
+  (e) => {
+    if (e.pointerType !== "touch" || !gameActive || activeTouchLookId !== null) return;
+    if (mobileControls && mobileControls.contains(e.target)) return;
+    activeTouchLookId = e.pointerId;
+    lastLookX = e.clientX;
+    lastLookY = e.clientY;
+  },
+  { passive: true },
+);
+
+document.addEventListener(
+  "pointermove",
+  (e) => {
+    if (e.pointerId !== activeTouchLookId || !gameActive) return;
+    const dx = e.clientX - lastLookX;
+    const dy = e.clientY - lastLookY;
+    lastLookX = e.clientX;
+    lastLookY = e.clientY;
+    applyLookDelta(dx, dy);
+  },
+  { passive: true },
+);
+
+document.addEventListener(
+  "pointerup",
+  (e) => {
+    if (e.pointerId === activeTouchLookId) activeTouchLookId = null;
+  },
+  { passive: true },
+);
+
+document.addEventListener(
+  "pointercancel",
+  (e) => {
+    if (e.pointerId === activeTouchLookId) activeTouchLookId = null;
+  },
+  { passive: true },
+);
+
+touchShootBtn?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  ensureAudioRunning();
+  triggerShoot();
+});
+
+touchHolyBtn?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  ensureAudioRunning();
+  triggerHolyWater();
 });
 
 overlay.addEventListener("click", requestStart);
@@ -1964,6 +2035,10 @@ restartBtn.addEventListener("click", () => {
 });
 
 resize();
+if ((window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || navigator.maxTouchPoints > 0) {
+  mobileControls?.classList.remove("hidden");
+  mobileControls?.setAttribute("aria-hidden", "false");
+}
 resetGame();
 
 let last = performance.now();
