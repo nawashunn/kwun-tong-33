@@ -110,3 +110,85 @@ Original prompt: i added develop web game skill ,can you use skill to check the 
 
 - Optional polish: add left/right screen zones with separate sensitivity tuning for easier one-hand mobile aiming.
 - Optional QA: run a real-device browser test (iOS Safari + Android Chrome) to tune touch sensitivity and button placement.
+
+## 2026-02-14 Mobile Full-Screen Tap Shooting Update
+
+- Changed mobile controls to remove shoot button and keep only Holy Water button at bottom-left.
+- Mobile gameplay input now supports:
+  - Tap anywhere on gameplay area = shoot
+  - Drag finger = aim/look (same touch stream)
+  - Holy Water button remains bottom-left and shows icon + count (`💧 xN`)
+- Added anti-selection/mobile UX protections:
+  - Global user-select off
+  - Tap highlight removed
+  - Overscroll disabled
+  - Select-start prevented on touch devices
+- Added best-effort mobile fullscreen request on start/touch gesture.
+  - Works where browser permits Fullscreen API; fails silently where unsupported (e.g. restricted iOS contexts).
+- Updated viewport meta for mobile full-screen style usage (`viewport-fit=cover`, zoom disabled).
+- Cache-busted script URL to `game.js?v=36`.
+
+## Validation
+
+- `node --check /Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` passed.
+- Ran skill Playwright client:
+  - `node /Users/nawashunn/.codex/skills/develop-web-game/scripts/web_game_playwright_client.js --url http://127.0.0.1:8080 --actions-file /Users/nawashunn/.codex/skills/develop-web-game/references/action_payloads.json --click-selector "#startBtn" --iterations 3 --pause-ms 250`
+- Refreshed screenshots:
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-0.png`
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-1.png`
+  - `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/output/web-game/shot-2.png`
+
+## 2026-02-14 Title + Credits (EN) Update
+
+- Added red Chinese game title in overlay: `觀搪 33 : 大展鴻圖` with Kai-style font fallback stack.
+- Added red English title line in overlay.
+- Added new English credits panel (`#creditsPanel`) with open buttons from start overlay and game-over screen.
+- Added close button for credits panel and JS handlers.
+- Updated script cache version to `game.js?v=39`.
+- Validation:
+  - `node --check /Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` passed.
+  - Playwright skill client run completed against local server.
+
+## 2026-02-14 Reticle + Ammo Visual Update
+
+- Changed aiming reticle from crosshair to a red dot in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/styles.css`.
+- Removed in-canvas yellow cross reticle draw in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` so only the red dot reticle remains.
+- Replaced projectile sprite from simple line-cross to a crucifix-style sprite matching the hand-held Jesus crucifix look in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` (`drawProjectileCrucifixSprite`).
+- Updated cache version to `game.js?v=40` in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/index.html`.
+
+## Validation
+
+- `node --check /Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` passed.
+- Ran skill Playwright client successfully after changes:
+  - `node /Users/nawashunn/.codex/skills/develop-web-game/scripts/web_game_playwright_client.js --url http://127.0.0.1:8080 --actions-file /Users/nawashunn/.codex/skills/develop-web-game/references/action_payloads.json --click-selector "#startBtn" --iterations 2 --pause-ms 250`
+
+## 2026-02-14 Mobile Rebalance Pass (Day 3+)
+
+- Supply crates now unlock in 1 shot (`supplyDropUnlockHits = 1`).
+- Rebalanced wave pacing for better mobile playability:
+  - Day ghost counts adjusted (Day 3 reduced to 10).
+  - Ghost HP curve reduced by day.
+  - Ghost speed reduced (with extra mobile difficulty scale).
+  - Spawn rate lowered, especially on mobile.
+  - Ghost dodge now starts Day 4 (not Day 3) with lower chance.
+  - Contact damage reduced.
+- Holy Water economy buffed:
+  - Score milestone now every 800 points (from 1000).
+  - Holy Water burst hits 4 targets (from 3) and stronger boss damage.
+- Updated script cache query to `game.js?v=42`.
+
+Validation:
+- `node --check game.js` passed.
+- Skill Playwright client run completed after the changes.
+
+## 2026-02-14 Boss Behavior Rebalance
+
+- Boss movement speed increased slightly across all days.
+- Boss dodge enabled starting Day 3.
+- Day 4 boss dodge frequency increased.
+- Day 5 boss now flies (hovering vertical movement) and has higher HP to be harder to kill.
+- Updated cache query to `game.js?v=43`.
+
+Validation:
+- `node --check game.js` passed.
+- Skill Playwright client run completed after the update.
