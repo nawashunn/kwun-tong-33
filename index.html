@@ -11,11 +11,15 @@
   </head>
   <body>
     <div id="overlay">
-      <h1>Kwun Tong 33 - Hung To Exorcism</h1>
+      <h1 id="overlayTitle">
+        <span class="titleZh">觀搪 33 : 大展鴻圖</span>
+        <span class="titleEn">Kwun Tong 33 - Hung To Exorcism</span>
+      </h1>
       <p class="warn">五日關卡・每日首領・手機全螢幕點擊射擊・左下角聖水</p>
       <p id="dayStory"></p>
       <p id="bootStatus" class="warn">Engine loading...</p>
       <button id="startBtn" type="button">Start</button>
+      <button id="openCreditsBtn" class="secondaryBtn" type="button">Credits (EN)</button>
     </div>
 
     <div id="hud" class="hidden">
@@ -41,7 +45,24 @@
           >https://store.steampowered.com/curator/45637977</a
         >
       </p>
+      <button id="openCreditsFromGameOverBtn" class="secondaryBtn" type="button">English Credits</button>
       <button id="restartBtn">重新開始</button>
+    </div>
+
+    <div id="creditsPanel" class="hidden">
+      <h2>Credits</h2>
+      <p class="creditsTitleZh">觀搪 33 : 大展鴻圖</p>
+      <p class="creditsTitleEn">Kwun Tong 33 - Hung To Exorcism</p>
+      <p id="creditsEnglish">
+        Game Production: nawashunn Production<br />
+        Technical Support: OpenAI Codex<br />
+        Special Thanks: BeanKing Computer Entertainment<br />
+        Inspiration Link:
+        <a href="https://store.steampowered.com/curator/45637977" target="_blank" rel="noopener noreferrer"
+          >https://store.steampowered.com/curator/45637977</a
+        >
+      </p>
+      <button id="closeCreditsBtn" type="button">Close</button>
     </div>
 
     <script>
@@ -55,6 +76,6 @@
         }
       }, 2500);
     </script>
-    <script type="module" src="game.js?v=38"></script>
+    <script type="module" src="game.js?v=39"></script>
   </body>
 </html>

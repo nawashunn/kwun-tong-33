@@ -7,10 +7,14 @@ const gameOverTitle = document.getElementById("gameOverTitle");
 const gameOverText = document.getElementById("gameOverText");
 const restartBtn = document.getElementById("restartBtn");
 const startBtn = document.getElementById("startBtn");
+const openCreditsBtn = document.getElementById("openCreditsBtn");
+const openCreditsFromGameOverBtn = document.getElementById("openCreditsFromGameOverBtn");
+const closeCreditsBtn = document.getElementById("closeCreditsBtn");
+const creditsPanel = document.getElementById("creditsPanel");
 const mobileControls = document.getElementById("mobileControls");
 const touchHolyBtn = document.getElementById("touchHoly");
 const reticle = document.getElementById("reticle");
-const overlayTitle = overlay.querySelector("h1");
+const overlayTitle = document.getElementById("overlayTitle");
 const overlayWarn = overlay.querySelector(".warn");
 const bootStatus = document.getElementById("bootStatus");
 const dayStoryEl = document.getElementById("dayStory");
@@ -470,14 +474,21 @@ function getDayStory(day) {
   return `${story.zh}\n\n${story.en}`;
 }
 
+function setOverlayTitle() {
+  if (!overlayTitle) return;
+  overlayTitle.innerHTML =
+    '<span class="titleZh">觀搪 33 : 大展鴻圖</span><span class="titleEn">Kwun Tong 33 - Hung To Exorcism</span>';
+}
+
 function showDayIntro(day) {
   pendingDayIntro = day;
   gameActive = false;
   overlay.classList.remove("hidden");
   gameOverPanel.classList.add("hidden");
   hud.classList.add("hidden");
+  if (creditsPanel) creditsPanel.classList.add("hidden");
 
-  overlayTitle.textContent = `Kwun Tong 33 - 第 ${day} 日`;
+  setOverlayTitle();
   overlayWarn.textContent = "電腦：S/F｜手機：全螢幕點擊射擊 + 左下角聖水";
   if (dayStoryEl) dayStoryEl.textContent = getDayStory(day);
   if (bootStatus) bootStatus.textContent = "按 Start 開始。";
@@ -723,6 +734,7 @@ function requestStart() {
   pendingDayIntro = 0;
   overlay.classList.add("hidden");
   gameOverPanel.classList.add("hidden");
+  if (creditsPanel) creditsPanel.classList.add("hidden");
   hud.classList.remove("hidden");
   gameActive = true;
   lookReady = false;
@@ -2104,6 +2116,20 @@ overlay.addEventListener("click", requestStart);
 startBtn.addEventListener("click", (e) => {
   e.stopPropagation();
   requestStart();
+});
+
+openCreditsBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  creditsPanel?.classList.remove("hidden");
+});
+
+openCreditsFromGameOverBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  creditsPanel?.classList.remove("hidden");
+});
+
+closeCreditsBtn?.addEventListener("click", () => {
+  creditsPanel?.classList.add("hidden");
 });
 
 restartBtn.addEventListener("click", () => {
