@@ -616,6 +616,23 @@ function getGhostHpForWave(day) {
   return ghostHpByWave[day] ?? 9 + day;
 }
 
+function getBossHpForWave(day) {
+  const base = 20 + day * 4;
+  const day5Boost = day >= 5 ? 10 : 0;
+  return Math.floor((base + day5Boost) * mobileDifficultyScale);
+}
+
+function getDodgeChanceForGhost(g) {
+  if (g.isBoss) {
+    if (wave <= 2) return 0;
+    if (wave === 3) return 0.26;
+    if (wave === 4) return 0.42;
+    return 0.56;
+  }
+  if (wave <= 3) return 0;
+  return Math.min(0.35, 0.15 + (wave - 4) * 0.1);
+}
+
 function spawnEnemy(isBoss = false) {
   for (let i = 0; i < 120; i += 1) {
     const spawnMin = minAimAngle + ghostArcMargin;
@@ -630,10 +647,12 @@ function spawnEnemy(isBoss = false) {
     ghosts.push({
       x,
       y,
-      hp: isBoss ? Math.floor((22 + wave * 4) * mobileDifficultyScale) : getGhostHpForWave(wave),
-      speed:
-        ((isBoss ? 0.5 : 0.53) + Math.random() * (isBoss ? 0.13 : 0.2) + Math.max(0, wave - 1) * (isBoss ? 0.03 : 0.028)) *
-        mobileDifficultyScale,
+      hp: isBoss ? getBossHpForWave(wave) : getGhostHpForWave(wave),
+      speed: (() => {
+        const raw =
+          (isBoss ? 0.5 : 0.53) + Math.random() * (isBoss ? 0.13 : 0.2) + Math.max(0, wave - 1) * (isBoss ? 0.03 : 0.028);
+        return raw * mobileDifficultyScale * (isBoss ? 1.12 : 1);
+      })(),
       hitCd: 0,
       bob: Math.random() * 10,
       alive: true,
@@ -642,7 +661,7 @@ function spawnEnemy(isBoss = false) {
       lastX: x,
       lastY: y,
       flyPhase: Math.random() * Math.PI * 2,
-      flyHeight: isBoss ? 0.3 : 0,
+      flyHeight: isBoss && wave >= 5 ? 0.34 : 0,
       dodgeCd: 0,
     });
     return true;
@@ -1016,7 +1035,8 @@ function updateGhosts(dt) {
   for (const g of ghosts) {
     if (!g.alive) continue;
     g.dodgeCd = Math.max(0, (g.dodgeCd || 0) - dt);
-    if (wave >= 4 && maybeDodgeGhost(g)) {
+    const canDodgeThisDay = g.isBoss ? wave >= 3 : wave >= 4;
+    if (canDodgeThisDay && maybeDodgeGhost(g)) {
       g.lastX = g.x;
       g.lastY = g.y;
     }
@@ -1065,7 +1085,7 @@ function updateGhosts(dt) {
     }
 
     g.bob += dt * 6;
-    if (g.isBoss) {
+    if (g.isBoss && wave >= 5) {
       g.flyPhase += dt * (1.25 + wave * 0.1);
       g.flyHeight = 0.34 + Math.sin(g.flyPhase) * 0.2;
     } else {
@@ -1107,9 +1127,10 @@ function maybeDodgeGhost(g) {
   }
   if (!threat) return false;
 
-  const chance = wave <= 3 ? 0 : Math.min(0.42, 0.18 + (wave - 4) * 0.11);
+  const chance = getDodgeChanceForGhost(g);
+  if (chance <= 0) return false;
   if (Math.random() > chance) {
-    g.dodgeCd = 0.26;
+    g.dodgeCd = g.isBoss ? (wave >= 4 ? 0.18 : 0.24) : 0.26;
     return false;
   }
 
@@ -1129,12 +1150,12 @@ function maybeDodgeGhost(g) {
     if (!hasClearPath(player.x, player.y, ax, ay)) continue;
     g.x = ax;
     g.y = ay;
-    g.dodgeCd = 0.86;
+    g.dodgeCd = g.isBoss ? (wave >= 5 ? 0.46 : wave >= 4 ? 0.58 : 0.7) : 0.86;
     playDodgeSfx();
     return true;
   }
 
-  g.dodgeCd = 0.42;
+  g.dodgeCd = g.isBoss ? (wave >= 4 ? 0.3 : 0.38) : 0.42;
   return false;
 }
 
