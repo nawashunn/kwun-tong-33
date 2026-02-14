@@ -225,3 +225,14 @@ Validation:
 
 - Optional UX polish: replace `Start Day 1` / `Continue to Day X` labels with bilingual text if needed.
 - Optional QA: run a mobile manual pass to tune intro button lock duration (650ms) for best feel.
+
+## 2026-02-14 HUD Size/Transparency Adjustment
+
+- Removed PC controls remark from in-game HUD in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/index.html`.
+- Kept PC control instruction in start menu overlay only (already present in `overlayWarn` text).
+- Reduced HUD visual footprint and made it more transparent in `/Users/nawashunn/Documents/Codex Project/Kwun Tong 33/styles.css`:
+  - Panel alpha lowered to `rgba(8, 10, 14, 0.34)`.
+  - Smaller position offsets, padding, radius, min width, font size, and line height.
+  - Softer border and lighter backdrop blur.
+- Validation:
+  - `node --check /Users/nawashunn/Documents/Codex Project/Kwun Tong 33/game.js` passed.
